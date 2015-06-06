@@ -42,7 +42,7 @@ def lev_dp(s1, s2):
     # Backtracks it to find the edit operations
     edits1 = edits2 = list()
 
-    
+    g
 
     i, j = tam1 - 1, tam2 - 1
     while i >= 0 and j >= 0:
