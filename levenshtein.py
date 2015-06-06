@@ -3,49 +3,7 @@ __author__ = 'luiz'
 import numpy as np
 
 
-def lev(s1, s2, i, j):
-    """
-    Computes the recursive Levenshtein Distance. Deprecated by lev_dp().
-
-    :param s1: The first string to be used in the comparison (won't be modified)
-    :param s2: The first string to be used in the comparison (won't be modified)
-    :param i: should be len(s1) - 1
-    :param j: should be len(s2) - 1
-
-    :return: The cost for transforming s1 into s2 and vice-versa. The costs for the deletion, replacement and insertion
-    operations is 1.
-    """
-
-    if i == 0:
-        return j
-
-    if j == 0:
-        return i
-
-    if s1[i] == s2[j]:
-        same = 0
-    else:
-        same = 1
-
-    return min([1 + lev(s1, s2, i - 1, j), 1 + lev(s1, s2, i, j - 1), lev(s1, s2, i - 1, j - 1) + same])
-
-
-def lev_dp(s1, s2):
-    """
-    Given two strings, computes the cost of transforming one into other by doing insertions, deletions and changing
-    characters. The costs for all operations is 1 (but this could be changed). This method uses Dynamic Programming.
-
-    :param s1: The first string to be used in the comparison (won't be modified)
-    :param s2: The first string to be used in the comparison (won't be modified)
-
-    :return: A triple (x,y,z) where x is the cost for transforming s1 into s2 (and vice-versa). y contains the
-    modifications that must be made on s1 in order to turn it into s2. Plain characters on y means that this char
-    must remain the same, '-' represents the deletion of the character on the original string and [c] means that the
-    character c in this position was replaced by another character of s2.
-    The same information happens for z in respect of s1.
-    """
-
-    def compare_chars(s1, s2, i, j):
+def __compare_chars(s1, s2, i, j):
         """
         Helper function to compare if two chars in different strings are DIFFERENT. This function exists to avoid the
         behavior s[-1] == s[len(s) - 1].
@@ -62,6 +20,60 @@ def lev_dp(s1, s2):
             return 1
         return 0
 
+
+def levenshtein_recursive(s1, s2):
+    """
+    Computes the recursive Levenshtein Distance. Deprecated by lev_dp().
+
+    :param s1: The first string to be used in the comparison (won't be modified)
+    :param s2: The first string to be used in the comparison (won't be modified)
+    :param i: should be len(s1) - 1
+    :param j: should be len(s2) - 1
+
+    :return: The cost for transforming s1 into s2 and vice-versa. The costs for the deletion, replacement and insertion
+    operations is 1.
+    """
+
+    def lev(s1, s2, i, j):
+        if i == 0:
+            return j
+
+        if j == 0:
+            return i
+
+        if s1[i] == s2[j]:
+            same = 0
+        else:
+            same = 1
+
+        return min([1 + lev(s1, s2, i - 1, j), 1 + lev(s1, s2, i, j - 1), lev(s1, s2, i - 1, j - 1) + same])
+
+    # function body
+
+    if len(s1) == 0:
+        return len(s2)
+
+    if len(s2) == 0:
+        return len(s1)
+
+    return lev(s1, s2, len(s1) - 1, len(s2) - 1)
+
+
+def levenshtein_dp(s1, s2):
+    """
+    Given two strings, computes the cost of transforming one into other by doing insertions, deletions and changing
+    characters. The costs for all operations is 1 (but this could be changed). This method uses Dynamic Programming.
+
+    :param s1: The first string to be used in the comparison (won't be modified)
+    :param s2: The first string to be used in the comparison (won't be modified)
+
+    :return: A triple (x,y,z) where x is the cost for transforming s1 into s2 (and vice-versa). y contains the
+    modifications that must be made on s1 in order to turn it into s2. Plain characters on y means that this char
+    must remain the same, '-' represents the deletion of the character on the original string and [c] means that the
+    character c in this position was replaced by another character of s2.
+    The same information happens for z in respect of s1.
+    """
+
     tam1 = len(s1)
     tam2 = len(s2)
 
@@ -74,7 +86,7 @@ def lev_dp(s1, s2):
     for i in range(1, tam1 + 1):
         for j in range(1, tam2 + 1):
             M[i, j] = min([
-                compare_chars(s1, s2, i - 1, j - 1) + M[i - 1, j - 1],
+                __compare_chars(s1, s2, i - 1, j - 1) + M[i - 1, j - 1],
                 M[i, j - 1] + 1,
                 M[i - 1, j] + 1
             ])
@@ -89,10 +101,12 @@ def lev_dp(s1, s2):
              0 = replacing or leaving (diagonal)
              1 = deletion from s1 (left)
              2 = deletion from s2 (up)
+
+             This is performed from the solution to the beginning
         """
 
         op_type = np.argmin([
-            compare_chars(s1, s2, i - 1, j - 1) + M[i - 1, j - 1],
+            __compare_chars(s1, s2, i - 1, j - 1) + M[i - 1, j - 1],
             M[i, j - 1] + 1,
             M[i - 1, j] + 1
         ])
@@ -122,6 +136,7 @@ def lev_dp(s1, s2):
 
             i -= 1
 
+    # add the remaining characters to the strings, if exists
     if i > 0 and j <= 0:
         edits1.extend(s1[0:i])
         edits2.extend(len(s1[0:i]) * '-')
@@ -134,14 +149,60 @@ def lev_dp(s1, s2):
     return M[tam1, tam2], ''.join(edits1), ''.join(edits2)
 
 
+def levenshtein_short(s1, s2, minimize_space=True):
+    """
+    Performs the Levenshtein's algorithm for calculating the cost of transforming s1 into s2 (and vice versa) using the
+    DP shortened version, so instead of keeping the entire matrix on memory, just the previous and current lines are
+    kept. Because of this, it is impossible to find out which operations must be performed in order to achieve the
+    conversion.
+
+    :param s1: The first string to be used in the comparison (won't be modified)
+    :param s2: The first string to be used in the comparison (won't be modified)
+    :param minimize_space: default is True, so the space complexity will be O(min{len(s1), len(s2)}, if false this
+     complexity becomes O(len(s2))
+    :return: The cost for transforming s1 into s2 and vice versa. The allowed operations are: insertion, deletion and
+    modification of characters. All the operations have unitary cost.
+    """
+
+    tam1 = len(s1)
+    tam2 = len(s2)
+
+    # so the line will have the size of the smallest word, but the number of iterations will increase
+    if minimize_space and tam1 > tam2:
+        tam1, tam2 = tam2, tam1
+        s1, s2 = s2, s1
+
+    M = np.zeros(shape=(2, tam2 + 1))
+    M[0, :] = np.array([i for i in range(0, tam2 + 1)])
+
+    for i in range(1, tam1 + 1):
+        if i % 2 == 0:
+            previous_i = 1
+        else:
+            previous_i = 0
+
+        M[i % 2, 0] = i
+
+        for j in range(1, tam2 + 1):
+            M[i % 2, j] = min(
+                __compare_chars(s1, s2, i - 1, j - 1) + M[previous_i, j - 1],
+                M[i % 2, j - 1] + 1,
+                M[previous_i, j] + 1
+            )
+
+    return M[tam1 % 2, tam2]
+
+
 if __name__ == "__main__":
 
-    s1 = "Evening"
-    s2 = "Seven"
+    s1 = "evening"
+    s2 = "seven"
 
-    cost, edt1, edt2 = lev_dp(s1, s2)
+    cost, edt1, edt2 = levenshtein_dp(s1, s2)
     print edt1
     print edt2
     print 'Total cost: %d' % cost
 
-    # print lev(s1, s2, len(s1) - 1, len(s2) - 1)
+    # print 'Total cost: %d' % levenshtein_short(s1, s2, False)
+    
+    # print levenshtein_recursive(s1, s2)
