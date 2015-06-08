@@ -58,7 +58,7 @@ def levenshtein_recursive(s1, s2):
 
     return lev(s1, s2, len(s1) - 1, len(s2) - 1)
 
-
+# update this doc
 def levenshtein_dp(s1, s2):
     """
     Given two strings, computes the cost of transforming one into other by doing insertions, deletions and changing
@@ -90,6 +90,15 @@ def levenshtein_dp(s1, s2):
                 M[i, j - 1] + 1,
                 M[i - 1, j] + 1
             ])
+
+    return M
+
+# update this doc
+def levenshtein_transform(s1, s2):
+    tam1 = len(s1)
+    tam2 = len(s2)
+
+    M = levenshtein_dp(s1, s2)
 
     edits1 = list()
     edits2 = list()
@@ -148,6 +157,87 @@ def levenshtein_dp(s1, s2):
     edits2.reverse()
     return M[tam1, tam2], ''.join(edits1), ''.join(edits2)
 
+    pass
+
+
+# doc this
+def needleman_wunsch(s1, s2):
+
+    def append_to_strings(char, string):
+        return [char + element for element in string]
+
+    def comparison(char1, char2):
+
+        if char1 == char2:
+            return 1
+        return -1
+
+    def find_sequences(i, j):
+
+        if i == 0 and j == 0:
+            return [['', '']]
+
+        if i == 0:
+            return [['', s2[j::-1]]]
+
+        if j == 0:
+            print 'here2'
+            return [[s1[i::-1], '']]
+
+        sequences = []
+        c = comparison(s1[i - 1], s2[j - 1])
+
+        max_score = max(
+            M[i - 1, j - 1] + c,
+            M[i, j - 1] - 1,
+            M[i - 1, j] - 1
+        )
+
+        path_diagonal = []
+        path_up = []
+        path_left = []
+
+        if M[i - 1, j - 1] + c == max_score:
+            path_diagonal = find_sequences(i - 1, j - 1)
+            path_diagonal = [[s1[i - 1] + element[0], s2[j - 1] + element[1]] for element in path_diagonal]
+
+        if M[i, j - 1] - 1 == max_score:
+            path_left = find_sequences(i, j - 1)
+            path_left = [['-' + element[0], s2[j - 1] + element[1]] for element in path_left]
+
+        if M[i - 1, j] - 1 == max_score:
+            path_up = find_sequences(i - 1, j)
+            path_up = [[s1[i - 1] + element[0], '-' + element[1]] for element in path_up]
+
+
+        return path_diagonal + path_up + path_left
+
+
+    tam1 = len(s1)
+    tam2 = len(s2)
+
+    M = np.zeros(shape=(tam1 + 1, tam2 + 1))
+
+    M[0, :] = np.array(range(0, -tam2 - 1, -1))
+    M[:, 0] = np.array(range(0, -tam1 - 1, -1))
+
+    for i in range(1, tam1 + 1):
+        for j in range(1, tam2 + 1):
+            M[i, j] = max(
+                M[i - 1, j - 1] + comparison(s1[i - 1], s2[j - 1]),
+                M[i, j - 1] - 1,
+                M[i - 1, j] - 1
+            )
+
+    # print M
+
+    solutions = find_sequences(tam1, tam2)
+    for solution in solutions:
+        solution[0] = solution[0][::-1]
+        solution[1] = solution[1][::-1]
+
+    return solutions
+
 
 def levenshtein_short(s1, s2, minimize_space=True):
     """
@@ -156,7 +246,7 @@ def levenshtein_short(s1, s2, minimize_space=True):
     kept. Because of this, it is impossible to find out which operations must be performed in order to achieve the
     conversion.
 
-    :param s1: The first string to be used in the comparison (won't be modified)
+    :paam s1: The first string to be used in the comparison (won't be modified)
     :param s2: The first string to be used in the comparison (won't be modified)
     :param minimize_space: default is True, so the space complexity will be O(min{len(s1), len(s2)}, if false this
      complexity becomes O(len(s2))
@@ -195,14 +285,22 @@ def levenshtein_short(s1, s2, minimize_space=True):
 
 if __name__ == "__main__":
 
-    s1 = "evening"
-    s2 = "seven"
+    # s1 = "evening"
+    # s2 = "seven"
 
-    cost, edt1, edt2 = levenshtein_dp(s1, s2)
-    print edt1
-    print edt2
-    print 'Total cost: %d' % cost
+    s1 = 'GATTACA'
+    s2 = 'GCATGCU'
 
-    # print 'Total cost: %d' % levenshtein_short(s1, s2, False)
-    
+    print needleman_wunsch(s1, s2)
+
+    # cost, edt1, edt2 = levenshtein_transform(s1, s2)
+    # print edt1
+    # print edt2
+    # print 'Total cost: %d' % cost
+    #
+    # # print 'Total cost: %d' % levenshtein_short(s1, s2, False)
+    #
+    # a = levenshtein_multi(s1, s2)
+    # print a
+
     # print levenshtein_recursive(s1, s2)
