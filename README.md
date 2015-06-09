@@ -13,4 +13,4 @@ _consider s1 and s2 as two different strings.
 
 Until now, the weights for all the edit operations (insertion, deletion, mismatch and matching) are the same (except for Neddleman-Wunsch, that has -1 for all operations but mismatch and +1 for matching). Code can be added to changes these weights according to the user's needs. Neddleman's algorithm can also be improved to penalize multiple small gaps and prefer long single gaps.
 
-Another related algorithms, such Damerau-Levenshtein could also be implemented.
+Another related algorithms, such Damerau-Levenshtein could also be implemented. Hirschberg's algorithm can also be added.
