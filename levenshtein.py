@@ -23,18 +23,25 @@ def __compare_chars(s1, s2, i, j):
 
 def levenshtein_recursive(s1, s2):
     """
-    Computes the recursive Levenshtein Distance. Deprecated by lev_dp().
+    Computes the recursive Levenshtein Distance. Deprecated, instead use levenshtein_dp() or levenshtein_sort() .
 
     :param s1: The first string to be used in the comparison (won't be modified)
     :param s2: The first string to be used in the comparison (won't be modified)
-    :param i: should be len(s1) - 1
-    :param j: should be len(s2) - 1
 
     :return: The cost for transforming s1 into s2 and vice-versa. The costs for the deletion, replacement and insertion
-    operations is 1.
+    operations are 1.
     """
 
     def lev(s1, s2, i, j):
+        """
+        This is the true Levenshtein recursive function.
+
+        :param s1: The first string to be used in the comparison (won't be modified)
+        :param s2: The first string to be used in the comparison (won't be modified)
+        :param i: Must be len(s1) - 1
+       :param j: Must be len(s2) - 1
+        """
+
         if i == 0:
             return j
 
@@ -47,18 +54,19 @@ def levenshtein_recursive(s1, s2):
             same = 1
 
         return min([1 + lev(s1, s2, i - 1, j), 1 + lev(s1, s2, i, j - 1), lev(s1, s2, i - 1, j - 1) + same])
-
     # function body
 
+    # skip trivial cases
     if len(s1) == 0:
         return len(s2)
 
     if len(s2) == 0:
         return len(s1)
 
+    # calculatations for the regular case
     return lev(s1, s2, len(s1) - 1, len(s2) - 1)
 
-# update this doc
+
 def levenshtein_dp(s1, s2):
     """
     Given two strings, computes the cost of transforming one into other by doing insertions, deletions and changing
@@ -91,17 +99,10 @@ def levenshtein_dp(s1, s2):
                 M[i - 1, j] + 1
             ])
 
-    return M
-
-# update this doc
-def levenshtein_transform(s1, s2):
-    tam1 = len(s1)
-    tam2 = len(s2)
-
-    M = levenshtein_dp(s1, s2)
-
     edits1 = list()
     edits2 = list()
+
+    # backtracks the matrix to find out how to transform the strings
 
     i, j = tam1, tam2
     while i > 0 and j > 0:
@@ -120,15 +121,13 @@ def levenshtein_transform(s1, s2):
             M[i - 1, j] + 1
         ])
 
-        # print('Appended %d. comparing %c and %c' % (op_type, s1[i - 1], s2[j - 1]))
-
         if op_type == 0:
             if s1[i - 1] == s2[j - 1]:
                 edits1.extend(s1[i - 1])
                 edits2.extend(s2[j - 1])
             else:
                 # if the chars aren't equal, then it is a substitution. Signalizes this surrounding the char with []
-                # the string will be reversed, that's why the brackets are reversed =)
+                # the string will be reversed, that's why the brackets are reversed
                 edits1.extend((']', s1[i - 1], '['))
                 edits2.extend((']', s2[j - 1], '['))
 
@@ -145,7 +144,7 @@ def levenshtein_transform(s1, s2):
 
             i -= 1
 
-    # add the remaining characters to the strings, if exists
+    # if remaining characters exists, them into the transformed strings
     if i > 0 and j <= 0:
         edits1.extend(s1[0:i])
         edits2.extend(len(s1[0:i]) * '-')
@@ -155,25 +154,38 @@ def levenshtein_transform(s1, s2):
 
     edits1.reverse()
     edits2.reverse()
+
     return M[tam1, tam2], ''.join(edits1), ''.join(edits2)
 
-    pass
 
-
-# doc this
 def needleman_wunsch(s1, s2):
+    """
+    Given two strings calculate all the best possible alignments between them. The traditional scoring system is used, so
+    mismatches and indels receive -1 points and matches worth 2 poins.
 
-    def append_to_strings(char, string):
+    :param s1: The first string to be compared (can be a DNA sequence!)
+    :param s2: The second string to be compared (can be a DNA sequence!)
+
+    :return: A list of lists in the form [[a1, a2], [b1, b2], ...] where a1, a2 corresponds to an allignment and so on.
+    The amount of alignments can be found by calculating the size of the bigger list.
+    """
+
+    # Simply adds a [char] to the beginning of [string]
+    def append_t_strings(char, string):
         return [char + element for element in string]
 
+    # Returns 1 if [char1] == [char2], -1 otherwise. If you want to change the score system, chance these values
+    # (or multiply this function' calls by weights
     def comparison(char1, char2):
-
         if char1 == char2:
             return 1
         return -1
 
+    # Backtracks the DP matrix in order to calculate all possible alignments between s1 and s2
+    # (the returned sequences must be reversed)
     def find_sequences(i, j):
 
+        # If the backtracking reached the leftmost column, there's nothing to append.
         if i == 0 and j == 0:
             return [['', '']]
 
@@ -181,10 +193,8 @@ def needleman_wunsch(s1, s2):
             return [['', s2[j::-1]]]
 
         if j == 0:
-            print 'here2'
             return [[s1[i::-1], '']]
 
-        sequences = []
         c = comparison(s1[i - 1], s2[j - 1])
 
         max_score = max(
@@ -196,6 +206,8 @@ def needleman_wunsch(s1, s2):
         path_diagonal = []
         path_up = []
         path_left = []
+
+        # branching
 
         if M[i - 1, j - 1] + c == max_score:
             path_diagonal = find_sequences(i - 1, j - 1)
@@ -209,9 +221,9 @@ def needleman_wunsch(s1, s2):
             path_up = find_sequences(i - 1, j)
             path_up = [[s1[i - 1] + element[0], '-' + element[1]] for element in path_up]
 
-
+        # merging
         return path_diagonal + path_up + path_left
-
+    # function end
 
     tam1 = len(s1)
     tam2 = len(s2)
@@ -221,6 +233,7 @@ def needleman_wunsch(s1, s2):
     M[0, :] = np.array(range(0, -tam2 - 1, -1))
     M[:, 0] = np.array(range(0, -tam1 - 1, -1))
 
+    # simple Needleman-Wunsch's algorithm core
     for i in range(1, tam1 + 1):
         for j in range(1, tam2 + 1):
             M[i, j] = max(
@@ -228,8 +241,6 @@ def needleman_wunsch(s1, s2):
                 M[i, j - 1] - 1,
                 M[i - 1, j] - 1
             )
-
-    # print M
 
     solutions = find_sequences(tam1, tam2)
     for solution in solutions:
@@ -285,22 +296,22 @@ def levenshtein_short(s1, s2, minimize_space=True):
 
 if __name__ == "__main__":
 
-    # s1 = "evening"
-    # s2 = "seven"
-
     s1 = 'GATTACA'
     s2 = 'GCATGCU'
 
+    print "Aligning %s and %s using Needleman-Wunsch algorithm:" % (s1, s2)
     print needleman_wunsch(s1, s2)
 
-    # cost, edt1, edt2 = levenshtein_transform(s1, s2)
-    # print edt1
-    # print edt2
-    # print 'Total cost: %d' % cost
-    #
-    # # print 'Total cost: %d' % levenshtein_short(s1, s2, False)
-    #
-    # a = levenshtein_multi(s1, s2)
-    # print a
+    s1 = "evening"
+    s2 = "seven"
 
-    # print levenshtein_recursive(s1, s2)
+    print "Calculating Levenshtein (or edit) Distance between %s and %s" % (s1, s2)
+
+    cost, edt1, edt2 = levenshtein_dp(s1, s2)
+    print edt1
+    print edt2
+    print 'Total cost (using DP): %d' % cost
+
+    print 'Total cost (using abbreviated DP): %d' % levenshtein_short(s1, s2, False)
+
+    print 'Total cost (using the recursive method): %d' % levenshtein_recursive(s1, s2)
