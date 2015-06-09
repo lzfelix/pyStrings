@@ -2,7 +2,15 @@
 
 A repository containing some Dynamic Programming String algorithms. For now the following methods were implemented:
 
+_consider s1 and s2 as two different strings.
+
 * __Levenshtein distance__ (recursive);
-* __Levenshtein distance__ (DP): Includes showing which operations should be performed to transform string_1 into string_2;
-* __Levenshtein shortened version__ (DP): Keeps in memory just 2 lines of the matrix, with length min{len(string_1), len(string_2)}, differently from the original implementation that has space complexity O(len(s1)*len(s2). On the other hand, when this method is used, it is impossible to know which operations should be performed to transform one
-string into another.
+* __Levenshtein distance__ (DP): An alternative implementation using Dynamic Programming. Also returns the operations that must be performed in order to transform _s1_ into _s2_ and vice-versa;
+* __Levenshtein shortened version__ (DP): Instead of keeping the entire matrix M used on the standard Levenshtein Distance, this method keeps just the last two lines, so its space complexity is reduced to O(_min{len(s1), len(s2)}_), albeit the transforming operations can't be found using this strategy;
+* __Neddleman-Wunsch Algorithm__ (DP): Computes the optimal alignment between _s1_ and _s2_. This function uses backtracking to return all optimal allignments. 
+
+## Further Improvments
+
+Until now, the weights for all the edit operations (insertion, deletion, mismatch and matching) are the same (except for Neddleman-Wunsch, that has -1 for all operations but mismatch and +1 for matching). Code can be added to changes these weights according to the user's needs. Neddleman's algorithm can also be improved to penalize multiple small gaps and prefer long single gaps.
+
+Another related algorithms, such Damerau-Levenshtein could also be implemented.
