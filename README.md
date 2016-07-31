@@ -2,7 +2,7 @@
 
 A repository containing some Dynamic Programming String algorithms. For now the following methods were implemented:
 
-_consider s1 and s2 as two different strings.
+_consider s1 and s2 as two different strings_.
 
 * __Levenshtein distance__ (recursive);
 * __Levenshtein distance__ (DP): An alternative implementation using Dynamic Programming. Also returns the operations that must be performed in order to transform _s1_ into _s2_ and vice-versa;
@@ -13,4 +13,4 @@ _consider s1 and s2 as two different strings.
 
 Until now, the weights for all the edit operations (insertion, deletion, mismatch and matching) are the same (except for Neddleman-Wunsch, that has -1 for all operations but mismatch and +1 for matching). Code can be added to changes these weights according to the user's needs. Neddleman's algorithm can also be improved to penalize multiple small gaps and prefer long single gaps.
 
-Another related algorithms, such Damerau-Levenshtein could also be implemented. Hirschberg's algorithm can also be added.
+Other related algorithms, such Damerau-Levenshtein or Hirschberg's can also be implemented.
