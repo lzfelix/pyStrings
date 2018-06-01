@@ -299,19 +299,19 @@ if __name__ == "__main__":
     s1 = 'GATTACA'
     s2 = 'GCATGCU'
 
-    print "Aligning %s and %s using Needleman-Wunsch algorithm:" % (s1, s2)
-    print needleman_wunsch(s1, s2)
+    print("Aligning %s and %s using Needleman-Wunsch algorithm:" % (s1, s2))
+    print(needleman_wunsch(s1, s2))
 
     s1 = "evening"
     s2 = "seven"
 
-    print "Calculating Levenshtein (or edit) Distance between %s and %s" % (s1, s2)
+    print("Calculating Levenshtein (or edit) Distance between %s and %s" % (s1, s2))
 
     cost, edt1, edt2 = levenshtein_dp(s1, s2)
-    print edt1
-    print edt2
-    print 'Total cost (using DP): %d' % cost
+    print(edt1)
+    print(edt2)
+    print('Total cost (using DP): %d' % cost)
 
-    print 'Total cost (using abbreviated DP): %d' % levenshtein_short(s1, s2, False)
+    print('Total cost (using abbreviated DP): %d' % levenshtein_short(s1, s2, False))
 
-    print 'Total cost (using the recursive method): %d' % levenshtein_recursive(s1, s2)
+    print('Total cost (using the recursive method): %d' % levenshtein_recursive(s1, s2))
