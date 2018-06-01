@@ -1,5 +1,7 @@
 # pyStrings
 
+[![Build Status](https://travis-ci.org/lzfelix/pyStrings.svg?branch=master)](https://travis-ci.org/lzfelix/pyStrings)
+
 A repository containing some Dynamic Programming String algorithms. For now the following methods were implemented:
 
 _consider s1 and s2 as two different strings_.
